@@ -1,1 +1,10 @@
-exec
+#executable
+braille
+
+#object files
+*.o
+
+#pictures
+*.jpg
+*.bmp
+*.gray

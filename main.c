@@ -12,6 +12,7 @@
 #include <MagickWand/MagickWand.h>
 
 #include "braille.h"
+#include "magick.h"
 #include "helpers.h"
 
 int main(int argc, char** argv) {
@@ -37,30 +38,26 @@ int main(int argc, char** argv) {
         }
     }
 
-    FILE *f = fopen(filename, "r");
+    MagickBooleanType status;
+    MagickWand* wand;
+
+    MagickWandGenesis();
+    wand = NewMagickWand();
+
+    status = MagickReadImage(wand, filename);
     
-    if(f == NULL) {
-        printf("file %s does not exist \n", filename);
-        exit(1);
+    if(status == MagickFalse) {
+        ThrowWandException(wand);
     }
 
-    unsigned char F[90][99];
+    // TODO: resize image to terminal size
+    // TODO: make image black and white
+    // TODO: get pixel values into a 2D array
 
-    for(int i = 0 ; i < 90 ; i++) {
-        for(int j = 0 ; j < 99; j++) {
-            F[i][j] = fgetc(f); 
-        }
-    }
+    wand = DestroyMagickWand(wand);
+    MagickWandTerminus();
 
-    fclose(f);
-
-    // normalizing
-    float k[90][99];
-    for(int i = 0 ; i < 90 ; i++) {
-        for(int j = 0 ; j < 99; j++) {
-            k[i][j] = (float)F[i][j]/255;
-        }
-    }
+    // TODO: normalize the array
 
     initialize_braille();
 
@@ -73,9 +70,9 @@ int main(int argc, char** argv) {
 
     curs_set(0);
 
-    /*-DISPLAY-CODE-GOES-HERE-*/
     clear();
    
+    // TODO: change below to print the new normalized array
     for(int i = 0 ; i < 45 ; i++) {
         for(int j = 0 ; j < 99 ; j++) {
             int u = fround(4*k[2*i][j]);
@@ -83,7 +80,6 @@ int main(int argc, char** argv) {
             mvprintbraille(i, j, random_braille(u,l));
         }
     }
-    /*------------------------*/
 
     getch();
     endwin();

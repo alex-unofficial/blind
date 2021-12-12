@@ -6,5 +6,6 @@ braille
 
 #pictures
 *.jpg
+*.png
 *.bmp
 *.gray

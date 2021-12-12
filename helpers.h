@@ -4,4 +4,6 @@
 int binom(int n, int k);
 int fround(float x);
 
+bool is_image(char* filename);
+
 #endif

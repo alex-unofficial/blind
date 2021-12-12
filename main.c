@@ -14,10 +14,22 @@
 int main(int argc, char** argv) {
     srand(time(0));
 
-    char* filename = "chiaroscuro.gray";
+    char* filename;
 
-    FILE *f;
-    f = fopen(filename, "r");
+    if(argc == 1) {
+        printf("ERROR: You must provide an image file to show \n");
+        printf(" - Usage: %s image_file\n", argv[0]);
+        exit(1);
+    } else {
+        if(is_image(argv[1])) {
+            filename = argv[1];
+        } else {
+            printf("ERROR: Image must be of type '.png' or '.jpg'\n");
+            exit(1);
+        }
+    }
+
+    FILE *f = fopen(filename, "r");
     
     if(f == NULL) {
         printf("file %s does not exist \n", filename);

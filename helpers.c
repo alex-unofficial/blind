@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdbool.h>
+
 #include "helpers.h"
 
 int binom(int n, int k) {
@@ -15,4 +18,13 @@ int binom(int n, int k) {
 
 int fround(float x) {
     return (int) (2 * x) - (int) x;
+}
+
+bool is_image(char* filename) {
+    const char* extension = strrchr(filename, '.');
+    if(!(strcmp(extension, ".jpg") && strcmp(extension, ".png"))) {
+        return true;
+    } else {
+        return false;
+    }
 }

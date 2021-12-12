@@ -5,6 +5,9 @@
 #include <locale.h>
 #include <time.h>
 
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 #include <ncurses.h>
 #include <MagickWand/MagickWand.h>
 
@@ -13,6 +16,11 @@
 
 int main(int argc, char** argv) {
     srand(time(0));
+
+    struct winsize win;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+    int height = 2 * win.ws_row;
+    int width = win.ws_col;
 
     char* filename;
 

@@ -4,9 +4,18 @@
 #include "braille.h"
 #include "helpers.h"
 
+char ***bytes_by_bits;
+int **len;
+
 void initialize_braille() {
     // initializing pointers
+    bytes_by_bits = (char ***) malloc(5 * sizeof(char **));
+    len = (int **) malloc(5 * sizeof(int *));
+
     for(int s = 0 ; s < 5 ; s++) {
+        bytes_by_bits[s] = (char **) malloc(5 * sizeof(char *));
+        len[s] = (int *) malloc(5 * sizeof(int));
+
         for(int k = 0 ; k < 5 ; k++) {
             bytes_by_bits[s][k] = (char *) malloc(binom(4, s) * binom(4, k));
             len[s][k] = 0;
@@ -35,7 +44,11 @@ void free_braille() {
         for(int k = 0 ; k < 5 ; k++) {
             free(bytes_by_bits[s][k]);
         }
+        free(bytes_by_bits[s]);
+        free(len[s]);
     }
+    free(bytes_by_bits);
+    free(len);
 }
 
 wchar_t random_braille(int u_dots, int l_dots) {

@@ -5,12 +5,12 @@
 #include <wchar.h>
 #include <locale.h>
 
-char *bytes_by_bits[5][5];
-int len[5][5];
+extern char ***bytes_by_bits;
+extern int **len;
 
 // alloc/dealloc
-void initialize_braille();
-void free_braille();
+void initialize_braille(); //should be called before any other function
+void free_braille();			 //should be called after all other functions
 
 // get braille character
 wchar_t random_braille(int u_dots, int l_dots);

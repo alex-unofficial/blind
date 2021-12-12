@@ -30,12 +30,7 @@ int main(int argc, char** argv) {
         printf(" - Usage: %s image_file\n", argv[0]);
         exit(1);
     } else {
-        if(is_image(argv[1])) {
-            filename = argv[1];
-        } else {
-            printf("ERROR: Image must be of type '.png' or '.jpg'\n");
-            exit(1);
-        }
+        filename = argv[1];
     }
 
     MagickBooleanType status;
@@ -50,8 +45,9 @@ int main(int argc, char** argv) {
         ThrowWandException(wand);
     }
 
-    // TODO: resize image to terminal size
-    // TODO: make image black and white
+    MagickScaleImage(wand, width, height);
+    MagickSetImageColorspace(wand, GRAYColorspace);
+
     // TODO: get pixel values into a 2D array
 
     wand = DestroyMagickWand(wand);
@@ -73,10 +69,10 @@ int main(int argc, char** argv) {
     clear();
    
     // TODO: change below to print the new normalized array
-    for(int i = 0 ; i < 45 ; i++) {
-        for(int j = 0 ; j < 99 ; j++) {
-            int u = fround(4*k[2*i][j]);
-            int l = fround(4*k[2*i+1][j]);
+    for(int i = 0 ; i < win.ws_row ; i++) {
+        for(int j = 0 ; j < win.ws_col ; j++) {
+            int u = 4;
+            int l = 4;
             mvprintbraille(i, j, random_braille(u,l));
         }
     }

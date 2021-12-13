@@ -5,7 +5,7 @@ LIBS = ncursesw MagickWand
 CFLAGS = $(shell pkg-config --cflags $(LIBS))-g
 LDFLAGS = $(shell pkg-config --libs $(LIBS))
 
-exec = braille
+exec = blind
 
 headers = $(wildcard *.h) 
 obj = $(headers:.h=.o)
@@ -14,10 +14,10 @@ obj = $(headers:.h=.o)
 
 all: $(exec)
 
-$(exec): main.o $(obj)
+$(exec): blind.o $(obj)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS)-o $@
 
-main.o: main.c $(headers)
+blind.o: blind.c $(headers)
 	$(CC) $(CFLAGS) -c $<
 
 $(obj): %.o: %.c %.h

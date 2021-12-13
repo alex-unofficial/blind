@@ -20,4 +20,5 @@ TODO list:
 * fix image output dimensions
 * more robust error handling
 * clean up code and add documentation
+* make compilation easier
 * add color support

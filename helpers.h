@@ -2,7 +2,7 @@
 #define HELPERS_H
 
 int binom(int n, int k);
-int fround(float x);
+int dround(double x);
 
 bool is_image(char* filename);
 

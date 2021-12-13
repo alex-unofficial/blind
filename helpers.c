@@ -16,7 +16,7 @@ int binom(int n, int k) {
     return (int)prod;
 }
 
-int fround(float x) {
+int dround(double x) {
     return (int) (2 * x) - (int) x;
 }
 

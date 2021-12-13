@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
     char* filename;
 
     if(argc == 1) {
-        printf("ERROR: You must provide an image file to show \n");
-        printf(" - Usage: %s image_file\n", argv[0]);
+        fprintf(stderr, "%s ERROR: You must provide an image file\n", argv[0]);
+        fprintf(stderr, "Usage: %s image_file\n", argv[0]);
         exit(1);
     } else {
         filename = argv[1];
@@ -48,12 +48,33 @@ int main(int argc, char** argv) {
     MagickScaleImage(wand, width, height);
     MagickSetImageColorspace(wand, GRAYColorspace);
 
-    // TODO: get pixel values into a 2D array
+    double **pixels;
+    pixels = (double **) malloc(height * sizeof(double *));
+    for(int i = 0 ; i < height ; i++) {
+        pixels[i] = (double *) malloc(width * sizeof(double));
+    }
+
+    PixelIterator *iterator;
+
+    PixelWand **pixel;
+    size_t num_pixel;
+    
+    iterator = NewPixelIterator(wand);
+    if(iterator == (PixelIterator *) NULL) {
+        ThrowWandException(wand);
+    }
+
+    pixel = PixelGetNextIteratorRow(iterator, &num_pixel);
+    for(int i = 0; pixel != (PixelWand **) NULL; i++) {
+        for(int j = 0 ; j < num_pixel ; j++) {
+            pixels[i][j] = PixelGetBlue(pixel[j]);
+        }
+
+        pixel = PixelGetNextIteratorRow(iterator, &num_pixel);   
+    }
 
     wand = DestroyMagickWand(wand);
     MagickWandTerminus();
-
-    // TODO: normalize the array
 
     initialize_braille();
 
@@ -71,14 +92,19 @@ int main(int argc, char** argv) {
     // TODO: change below to print the new normalized array
     for(int i = 0 ; i < win.ws_row ; i++) {
         for(int j = 0 ; j < win.ws_col ; j++) {
-            int u = 4;
-            int l = 4;
+            int u = dround(4 * pixels[2 * i][j]);
+            int l = dround(4 * pixels[2 * i + 1][j]);
             mvprintbraille(i, j, random_braille(u,l));
         }
     }
 
     getch();
     endwin();
+
+    for(int i = 0 ; i < height ; i++) {
+        free(pixels[i]);
+    }
+    free(pixels);
 
     free_braille();
 

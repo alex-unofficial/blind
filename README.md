@@ -17,7 +17,6 @@ blind /path/to/image.png
 
 TODO list:
 ---------
-* fix image output dimensions
 * more robust error handling
 * clean up code and add documentation
 * make compilation easier

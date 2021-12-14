@@ -35,18 +35,52 @@ int main(int argc, char** argv) {
 
     MagickBooleanType status;
     MagickWand* wand;
+    PixelWand* bg;
 
     MagickWandGenesis();
     wand = NewMagickWand();
 
+    bg = NewPixelWand();
+    PixelSetColor(bg, "black");
+
+    MagickSetBackgroundColor(wand, bg);
+
     status = MagickReadImage(wand, filename);
-    
+
     if(status == MagickFalse) {
         ThrowWandException(wand);
     }
 
-    MagickScaleImage(wand, width, height);
     MagickSetImageColorspace(wand, GRAYColorspace);
+
+    size_t imgWidth, imgHeight;
+    imgWidth = MagickGetImageWidth(wand);
+    imgHeight = MagickGetImageHeight(wand);
+
+    double width_scalar, height_scalar;
+    ssize_t offset = 0;
+    
+    width_scalar = (double)width/imgWidth;
+    height_scalar = (double)height/imgHeight;
+
+    if(width_scalar < height_scalar) {
+        //resize to width then extend to height
+        
+        offset = (ssize_t)(height/2.0 - width_scalar*imgHeight/2.0);
+
+        MagickScaleImage(wand, width, dround(width_scalar*imgHeight));
+        MagickExtentImage(wand, width, height, 0, 0);
+        MagickRollImage(wand, 0, offset);
+    } else {
+        //resize to height then extend to width
+
+        offset = (ssize_t)(width/2.0 - height_scalar*imgWidth/2.0);
+
+        MagickScaleImage(wand, dround(height_scalar*imgWidth), height);
+        MagickExtentImage(wand, width, height, 0, 0);
+        MagickRollImage(wand, offset, 0);
+    } 
+
 
     double **pixels;
     pixels = (double **) malloc(height * sizeof(double *));
@@ -89,7 +123,6 @@ int main(int argc, char** argv) {
 
     clear();
    
-    // TODO: change below to print the new normalized array
     for(int i = 0 ; i < win.ws_row ; i++) {
         for(int j = 0 ; j < win.ws_col ; j++) {
             int u = dround(4 * pixels[2 * i][j]);

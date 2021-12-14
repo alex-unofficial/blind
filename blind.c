@@ -1,4 +1,6 @@
-//#define _XOPEN_SOURCE 700
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,54 +35,12 @@ int main(int argc, char** argv) {
         filename = argv[1];
     }
 
-    MagickBooleanType status;
-    MagickWand* wand;
-    PixelWand* bg;
-
-    MagickWandGenesis();
-    wand = NewMagickWand();
-
-    bg = NewPixelWand();
-    PixelSetColor(bg, "black");
-
-    MagickSetBackgroundColor(wand, bg);
-
-    status = MagickReadImage(wand, filename);
-
-    if(status == MagickFalse) {
-        ThrowWandException(wand);
+    FILE *img;
+    img = fopen(filename, "r");
+    if(img == NULL) {
+        fprintf(stderr, "ERROR: File %s does not exist\n", filename);
+        exit(1);
     }
-
-    MagickSetImageColorspace(wand, GRAYColorspace);
-
-    size_t imgWidth, imgHeight;
-    imgWidth = MagickGetImageWidth(wand);
-    imgHeight = MagickGetImageHeight(wand);
-
-    double width_scalar, height_scalar;
-    ssize_t offset = 0;
-    
-    width_scalar = (double)width/imgWidth;
-    height_scalar = (double)height/imgHeight;
-
-    if(width_scalar < height_scalar) {
-        //resize to width then extend to height
-        
-        offset = (ssize_t)(height/2.0 - width_scalar*imgHeight/2.0);
-
-        MagickScaleImage(wand, width, dround(width_scalar*imgHeight));
-        MagickExtentImage(wand, width, height, 0, 0);
-        MagickRollImage(wand, 0, offset);
-    } else {
-        //resize to height then extend to width
-
-        offset = (ssize_t)(width/2.0 - height_scalar*imgWidth/2.0);
-
-        MagickScaleImage(wand, dround(height_scalar*imgWidth), height);
-        MagickExtentImage(wand, width, height, 0, 0);
-        MagickRollImage(wand, offset, 0);
-    } 
-
 
     double **pixels;
     pixels = (double **) malloc(height * sizeof(double *));
@@ -88,27 +48,7 @@ int main(int argc, char** argv) {
         pixels[i] = (double *) malloc(width * sizeof(double));
     }
 
-    PixelIterator *iterator;
-
-    PixelWand **pixel;
-    size_t num_pixel;
-    
-    iterator = NewPixelIterator(wand);
-    if(iterator == (PixelIterator *) NULL) {
-        ThrowWandException(wand);
-    }
-
-    pixel = PixelGetNextIteratorRow(iterator, &num_pixel);
-    for(int i = 0; pixel != (PixelWand **) NULL; i++) {
-        for(int j = 0 ; j < num_pixel ; j++) {
-            pixels[i][j] = PixelGetBlue(pixel[j]);
-        }
-
-        pixel = PixelGetNextIteratorRow(iterator, &num_pixel);   
-    }
-
-    wand = DestroyMagickWand(wand);
-    MagickWandTerminus();
+    GetPixelValues(img, pixels, width, height);
 
     initialize_braille();
 

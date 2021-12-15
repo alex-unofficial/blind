@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
 
     struct winsize win;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+
     int height = 2 * win.ws_row;
     int width = win.ws_col;
 

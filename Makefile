@@ -2,7 +2,7 @@ CC = gcc
 
 LIBS = ncursesw MagickWand
 
-CFLAGS = $(shell pkg-config --cflags $(LIBS))-g
+CFLAGS = $(shell pkg-config --cflags $(LIBS)) -g
 LDFLAGS = $(shell pkg-config --libs $(LIBS))
 
 exec = blind
@@ -15,7 +15,7 @@ obj = $(headers:.h=.o)
 all: $(exec)
 
 $(exec): blind.o $(obj)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS)-o $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 blind.o: blind.c $(headers)
 	$(CC) $(CFLAGS) -c $<

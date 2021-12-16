@@ -91,11 +91,11 @@ int main(int argc, char** argv) {
         }
     }
 
-    char c;
+    int c;
     while(true) {
         // read characters until q is pressed at which point exit the program
         c = getch();
-        if(c == 'q') break;
+        if(c == 'q' || c == EOF) break;
     }
     endwin();
 

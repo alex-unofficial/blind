@@ -4,8 +4,5 @@ blind
 #object files
 *.o
 
-#pictures
-*.jpg
-*.png
-*.bmp
-*.gray
+#log files
+*.log

@@ -26,18 +26,6 @@ int main(int argc, char** argv) {
     // initializing the random seed based on current time
     srand(time(0));
 
-    int range = 1;
-    int dither = true;
-    
-    // getting terminal dimensions
-    struct winsize win;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
-
-    // height is 2 times the terminal rows because each braille character is 
-    // treated like 2 'pixels' on top of each other
-    int height = 4 * win.ws_row / sqrt(range);
-    int width = 2 * win.ws_col / sqrt(range);
-
     // handling input
     char* filename;
     if(argc == 1) {
@@ -55,40 +43,41 @@ int main(int argc, char** argv) {
         fprintf(stderr, "ERROR: File %s does not exist\n", filename);
         exit(1);
     }
+    
+    // some options
+    int range = 1;
+    int dither = true;
+
+    // getting terminal dimensions
+    struct winsize win;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
+    int height = 4 * win.ws_row / sqrt(range);
+    int width = 2 * win.ws_col / sqrt(range);
 
     // the pixels array contains the brightness values in the input image 
     // for every character in the terminal
     double **pixels;
-    // allocating memory for the pixels array
+    // the dots array contains the ammount of dots to use per "pixel"
+    int **dots;
+    // allocating memory for the arrays
     alloc2d(pixels, double, height, width);
+    alloc2d(dots, int, height, width);
 
     // using the input image we construct the pixels array
     GetPixelValues(img, pixels, width, height);
 
-    int **dots;
-    alloc2d(dots, int, height, width);
-
     // quantize and apply dithering
     quantize_image(pixels, dots, range, width, height, dither);
 
-    // pixels is no longer needed so it is freed
-    free2d(pixels, height);
-
-    // converting to braille array
+    // the braille array contains the braille characters to print to the screen
     wchar_t **braille;
     alloc2d(braille, wchar_t, win.ws_row, win.ws_col);
 
-    for(int i = 0 ; i < win.ws_row; i++) {
-        for(int j = 0 ; j < win.ws_col ; j++) {
-            braille[i][j] = get_braille(
-                    dots[4*i    ][2*j], dots[4*i    ][2*j + 1],
-                    dots[4*i + 1][2*j], dots[4*i + 1][2*j + 1],
-                    dots[4*i + 2][2*j], dots[4*i + 2][2*j + 1],
-                    dots[4*i + 3][2*j], dots[4*i + 3][2*j + 1]);
-        }
-    }
+    // converting to braille array
+    convert_to_braille(dots, braille, range, win.ws_row, win.ws_col);
 
-    // dots is no longer needed so it is freed
+    // pixels and dots are no longer needed so they are freed
+    free2d(pixels, height);
     free2d(dots, height);
 
     // initializing the arrays used for printing the braille characters
@@ -107,15 +96,6 @@ int main(int argc, char** argv) {
     // for every character in the terminal window
     for(int i = 0 ; i < win.ws_row ; i++) {
         for(int j = 0 ; j < win.ws_col ; j++) {
-            // for all characters in every row 2 pixel inputs are accessed,
-            // `u` for the upper pixel and `l` for the lower one.
-            // each half-braille character can contain from 0 to 4 dots
-            // so the normalized array (0..1) is converted to
-            // the closest integer approximation from 0 to 4
-            //int u = dround(4 * pixels[2 * i][j]);
-            //int l = dround(4 * pixels[2 * i + 1][j]);
-            //int u = dots[2*i][j];
-            //int l = dots[2*i + 1][j];
             mvprintbraille(i, j, braille[i][j]);
         }
     }
@@ -125,6 +105,8 @@ int main(int argc, char** argv) {
         // read characters until q is pressed at which point exit the program
         c = getch();
         if(c == 'q' || c == EOF) break;
+
+
     }
     endwin();
 

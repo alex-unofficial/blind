@@ -139,6 +139,29 @@ wchar_t random_braille(int u_dots, int l_dots) {
     return braille;
 }
 
+void convert_to_braille(int **dots, wchar_t **braille, int range, size_t rows, size_t cols) {
+    if(range == 1) {
+        for(int i = 0 ; i < rows; i++) {
+            for(int j = 0 ; j < cols ; j++) {
+                braille[i][j] = get_braille(
+                        dots[  4*i  ][2*j], dots[  4*i  ][2*j + 1],
+                        dots[4*i + 1][2*j], dots[4*i + 1][2*j + 1],
+                        dots[4*i + 2][2*j], dots[4*i + 2][2*j + 1],
+                        dots[4*i + 3][2*j], dots[4*i + 3][2*j + 1]
+                        );
+            }
+        }
+    } else if(range == 4) {
+        for(int i = 0 ; i < rows; i++) {
+            for(int j = 0 ; j < cols ; j++) {
+                braille[i][j] = random_braille(dots[2*i][j], dots[2*i + 1][j]);
+            }
+        }
+    } else {
+        fprintf(stderr, "invalid range: %d", range);
+    }
+}
+
 // correctly prints a braille character to stdout
 void print_braille(wchar_t braille) {
     wprintf(L"%lc", braille);

@@ -32,6 +32,8 @@ wchar_t random_braille(int u_dots, int l_dots);
 // returns a random braille character 
 // with `u_dots` upper dots and `l_dots` lower dots.
 
+void convert_to_braille(int **dots, wchar_t **braille, int range, size_t rows, size_t cols); 
+
 /* output */
 void print_braille(wchar_t braille);	// prints a braille character to `stdout`.
 

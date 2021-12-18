@@ -22,6 +22,48 @@
 #include "magick.h"
 #include "helpers.h"
 
+void print_picture(char* filename, int row, int col, int range, bool dither) {
+    // setting image dimensions
+    int height = 4 * row / sqrt(range);
+    int width = 2 * col / sqrt(range);
+
+    // the pixels array contains the brightness values in the input image 
+    // for every character in the terminal
+    double **pixels;
+    // the dots array contains the ammount of dots to use per "pixel"
+    int **dots;
+    // allocating memory for the arrays
+    alloc2d(pixels, double, height, width);
+    alloc2d(dots, int, height, width);
+
+    // using the input image we construct the pixels array
+    GetPixelValues(filename, pixels, width, height);
+
+    // quantize and apply dithering
+    quantize_image(pixels, dots, range, width, height, dither);
+
+    // the braille array contains the braille characters to print to the screen
+    wchar_t **braille;
+    alloc2d(braille, wchar_t, row, col);
+
+    // converting to braille array
+    convert_to_braille(dots, braille, range, row, col);
+
+    // pixels and dots are no longer needed so they are freed
+    free2d(pixels, height);
+    free2d(dots, height);
+
+    // for every character in the terminal window
+    for(int i = 0 ; i < row ; i++) {
+        for(int j = 0 ; j < col ; j++) {
+            mvprintbraille(i, j, braille[i][j]);
+        }
+    }
+
+    // deallocate memory for the braille array
+    free2d(braille, row);
+}
+
 int main(int argc, char** argv) {
     // initializing the random seed based on current time
     srand(time(0));
@@ -36,14 +78,6 @@ int main(int argc, char** argv) {
         filename = argv[1];
     }
 
-    // opening image file and handling read error
-    FILE *img;
-    img = fopen(filename, "r");
-    if(img == NULL) {
-        fprintf(stderr, "ERROR: File %s does not exist\n", filename);
-        exit(1);
-    }
-    
     // some options
     int range = 1;
     int dither = true;
@@ -51,34 +85,6 @@ int main(int argc, char** argv) {
     // getting terminal dimensions
     struct winsize win;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
-    int height = 4 * win.ws_row / sqrt(range);
-    int width = 2 * win.ws_col / sqrt(range);
-
-    // the pixels array contains the brightness values in the input image 
-    // for every character in the terminal
-    double **pixels;
-    // the dots array contains the ammount of dots to use per "pixel"
-    int **dots;
-    // allocating memory for the arrays
-    alloc2d(pixels, double, height, width);
-    alloc2d(dots, int, height, width);
-
-    // using the input image we construct the pixels array
-    GetPixelValues(img, pixels, width, height);
-
-    // quantize and apply dithering
-    quantize_image(pixels, dots, range, width, height, dither);
-
-    // the braille array contains the braille characters to print to the screen
-    wchar_t **braille;
-    alloc2d(braille, wchar_t, win.ws_row, win.ws_col);
-
-    // converting to braille array
-    convert_to_braille(dots, braille, range, win.ws_row, win.ws_col);
-
-    // pixels and dots are no longer needed so they are freed
-    free2d(pixels, height);
-    free2d(dots, height);
 
     // initializing the arrays used for printing the braille characters
     initialize_braille();
@@ -92,26 +98,26 @@ int main(int argc, char** argv) {
     curs_set(0); // return cursor to beginning of the screen
 
     clear(); // clear the screen
-   
-    // for every character in the terminal window
-    for(int i = 0 ; i < win.ws_row ; i++) {
-        for(int j = 0 ; j < win.ws_col ; j++) {
-            mvprintbraille(i, j, braille[i][j]);
-        }
-    }
 
+    print_picture(filename, win.ws_row, win.ws_col, range, dither);
+   
     int c;
     while(true) {
         // read characters until q is pressed at which point exit the program
         c = getch();
         if(c == 'q' || c == EOF) break;
 
+        // getting terminal dimensions
+        int prevrows = win.ws_row;
+        int prevcols = win.ws_col;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
 
+        // if dimensions changed
+        if(win.ws_row != prevrows || win.ws_col != prevcols) {
+            print_picture(filename, win.ws_row, win.ws_col, range, dither);
+        }
     }
     endwin();
-
-    // deallocate memory for the braille array
-    free2d(braille, win.ws_row);
 
     // free the memory used in constructing the braille characters
     free_braille();

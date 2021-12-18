@@ -23,7 +23,15 @@
  * resize it to the correct dimensions and then get the pixel brightness values for
  * every pixel in the new image
  */
-void GetPixelValues(FILE* img, double **pixels, const size_t width, const size_t height) {
+void GetPixelValues(char* filename, double **pixels, const size_t width, const size_t height) {
+    // opening image file and handling read error
+    FILE *img;
+    img = fopen(filename, "r");
+    if(img == NULL) {
+        fprintf(stderr, "ERROR: File %s does not exist\n", filename);
+        exit(1);
+    }
+
     // initialize the MagickWand utilities and variables
     MagickBooleanType status;
     MagickWand* wand;
@@ -108,6 +116,8 @@ void GetPixelValues(FILE* img, double **pixels, const size_t width, const size_t
     iterator = DestroyPixelIterator(iterator);
 
     MagickWandTerminus();
+
+    fclose(img);
 }
 
 void quantize_image(double **original, int **quantized, int range, size_t width, size_t height, bool dither) {

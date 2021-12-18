@@ -25,6 +25,9 @@ void free_braille();	// should be called after all other functions
 											// frees the memory allocated to `bytes_by_bits` and `len`.
 
 /* get braille character */
+wchar_t get_braille(char a, char b, char c, char d, char e, char f, char g, char h);
+// returns a braille characrer defined by a..h representing the individual dots
+
 wchar_t random_braille(int u_dots, int l_dots); 
 // returns a random braille character 
 // with `u_dots` upper dots and `l_dots` lower dots.

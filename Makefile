@@ -2,8 +2,8 @@ CC = gcc
 
 LIBS = ncursesw MagickWand
 
-CFLAGS = $(shell pkg-config --cflags $(LIBS))-ggdb3
-LDFLAGS = $(shell pkg-config --libs $(LIBS))
+CFLAGS = $(shell pkg-config --cflags $(LIBS)) -ggdb3
+LDFLAGS = $(shell pkg-config --libs $(LIBS)) -lm
 
 exec = blind
 

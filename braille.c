@@ -102,6 +102,31 @@ void free_braille() {
     free(len);
 }
 
+/* This function returns the unicode character that represents the braille character
+ * with dot pattern:
+ *  a b
+ *  c d
+ *  e f
+ *  g h
+ *
+ *  a..h MUST be either 0 or 1
+ */
+wchar_t get_braille(char a, char b, char c, char d, char e, char f, char g, char h) {
+    unsigned char offset = 0;
+    offset = offset | (a << 0);
+    offset = offset | (b << 3);
+    offset = offset | (c << 1);
+    offset = offset | (d << 4);
+
+    offset = offset | (e << 2);
+    offset = offset | (f << 5);
+    offset = offset | (g << 6);
+    offset = offset | (h << 7);
+
+    wchar_t braille = 0x2800 + offset;
+    return braille;
+}
+
 /* This function returns the unicode character that represents
  * a random braille character with `u_dots` upper and `l_dots` lower dots
  *

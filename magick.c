@@ -1,19 +1,19 @@
-#include <stdlib.h>
-
 #include <MagickWand/MagickWand.h>
+
+#include <math.h>
 
 #include "magick.h"
 #include "helpers.h"
 
 // handles output of the exceptions from magick wand
-#define ThrowWandException(wand) { \
-    char *description; \
-    ExceptionType severity; \
-    \
-    description = MagickGetException(wand, &severity); \
-    (void) fprintf(stderr, "%s %s %lu %s \n", GetMagickModule(), description); \
-    description = (char *) MagickRelinquishMemory(description); \
-    exit(-1); \
+#define ThrowWandException(wand) {                                              \
+    char *description;                                                          \
+    ExceptionType severity;                                                     \
+                                                                                \
+    description = MagickGetException(wand, &severity);                          \
+    (void) fprintf(stderr, "%s %s %lu %s \n", GetMagickModule(), description);  \
+    description = (char *) MagickRelinquishMemory(description);                 \
+    exit(-1);                                                                   \
 }
 
 /* This functions takes as input a file pointer to an image file and an allocated
@@ -44,7 +44,7 @@ void GetPixelValues(FILE* img, double **pixels, const size_t width, const size_t
     }
 
     // convert to greyscale
-    MagickSetImageColorspace(wand, GRAYColorspace);
+    MagickSetColorspace(wand, GRAYColorspace);
 
     // resize the image preserving width:height ratio
     size_t imgWidth, imgHeight;
@@ -109,3 +109,27 @@ void GetPixelValues(FILE* img, double **pixels, const size_t width, const size_t
 
     MagickWandTerminus();
 }
+
+void quantize_image(double **original, int **quantized, int range, size_t width, size_t height, bool dither) {
+    for(int y = 0; y < height ; y++) {
+        for(int x = 0 ; x < width ; x++) {
+            double old = range * original[y][x];
+            int new = dround(old);
+            quantized[y][x] = new;
+
+            if(dither) {
+                double err = (old - new)/range;
+                if(x < width - 1)
+                    original[y    ][x + 1] = original[y    ][x + 1] + err * 7.0/16.0;
+                if(y < height - 1) {
+                    original[y + 1][x    ] = original[y + 1][x    ] + err * 5.0/16.0;
+                    if(x > 0)
+                        original[y + 1][x - 1] = original[y + 1][x - 1] + err * 3.0/16.0;
+                    if(x < width - 1)
+                        original[y + 1][x + 1] = original[y + 1][x + 1] + err * 1.0/16.0;
+                }
+            }
+        }
+    }
+}
+

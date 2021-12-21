@@ -17,7 +17,6 @@ blind /path/to/image.png
 
 TODO list:
 ---------
-* implement dithering
 * implement command line options
 * more robust error handling
 * make compilation easier

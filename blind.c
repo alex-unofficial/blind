@@ -22,47 +22,7 @@
 #include "magick.h"
 #include "helpers.h"
 
-void print_picture(char* filename, int row, int col, int range, bool dither) {
-    // setting image dimensions
-    int height = 4 * row / sqrt(range);
-    int width = 2 * col / sqrt(range);
-
-    // the pixels array contains the brightness values in the input image 
-    // for every character in the terminal
-    double **pixels;
-    // the dots array contains the ammount of dots to use per "pixel"
-    int **dots;
-    // allocating memory for the arrays
-    alloc2d(pixels, double, height, width);
-    alloc2d(dots, int, height, width);
-
-    // using the input image we construct the pixels array
-    GetPixelValues(filename, pixels, width, height);
-
-    // quantize and apply dithering
-    quantize_image(pixels, dots, range, width, height, dither);
-
-    // the braille array contains the braille characters to print to the screen
-    wchar_t **braille;
-    alloc2d(braille, wchar_t, row, col);
-
-    // converting to braille array
-    convert_to_braille(dots, braille, range, row, col);
-
-    // pixels and dots are no longer needed so they are freed
-    free2d(pixels, height);
-    free2d(dots, height);
-
-    // for every character in the terminal window
-    for(int i = 0 ; i < row ; i++) {
-        for(int j = 0 ; j < col ; j++) {
-            mvprintbraille(i, j, braille[i][j]);
-        }
-    }
-
-    // deallocate memory for the braille array
-    free2d(braille, row);
-}
+void print_picture(char* filename, int row, int col, int range, bool dither);
 
 int main(int argc, char** argv) {
     // initializing the random seed based on current time
@@ -123,4 +83,46 @@ int main(int argc, char** argv) {
     free_braille();
 
     return 0;
+}
+
+void print_picture(char* filename, int row, int col, int range, bool dither) {
+    // setting image dimensions
+    int height = 4 * row / sqrt(range);
+    int width = 2 * col / sqrt(range);
+
+    // the pixels array contains the brightness values in the input image 
+    // for every character in the terminal
+    double **pixels;
+    // the dots array contains the ammount of dots to use per "pixel"
+    int **dots;
+    // allocating memory for the arrays
+    alloc2d(pixels, double, height, width);
+    alloc2d(dots, int, height, width);
+
+    // using the input image we construct the pixels array
+    GetPixelValues(filename, pixels, width, height);
+
+    // quantize and apply dithering
+    quantize_image(pixels, dots, range, width, height, dither);
+
+    // the braille array contains the braille characters to print to the screen
+    wchar_t **braille;
+    alloc2d(braille, wchar_t, row, col);
+
+    // converting to braille array
+    convert_to_braille(dots, braille, range, row, col);
+
+    // pixels and dots are no longer needed so they are freed
+    free2d(pixels, height);
+    free2d(dots, height);
+
+    // for every character in the terminal window
+    for(int i = 0 ; i < row ; i++) {
+        for(int j = 0 ; j < col ; j++) {
+            mvprintbraille(i, j, braille[i][j]);
+        }
+    }
+
+    // deallocate memory for the braille array
+    free2d(braille, row);
 }
